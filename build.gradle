@@ -1,0 +1,54 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
+    }
+}
+
+allprojects {
+    apply plugin: "eclipse"
+    apply plugin: "idea"
+
+    version = project.properties['API_VERSION']
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+    }
+}
+
+subprojects {
+    if (!name.equals("android")) {
+        apply plugin: "java"
+        apply plugin: "maven"
+
+        task sourcesJar(type: Jar, dependsOn: classes) {
+            classifier = 'sources'
+            from sourceSets.main.allSource
+        }
+        task javadocJar(type: Jar, dependsOn: javadoc) {
+            classifier = 'javadoc'
+            javadoc.failOnError = false
+
+            from javadoc.destinationDir
+        }
+
+        artifacts {
+            archives jar
+            archives sourcesJar
+            archives javadocJar
+        }
+    } else {
+        apply plugin: "com.android.library"
+        apply plugin: 'com.github.dcendents.android-maven'
+    }
+
+    group = project.properties['API_GROUP']
+    sourceCompatibility = 1.6
+}
